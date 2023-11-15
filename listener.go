@@ -69,3 +69,25 @@ func Listen(h host.Host, tag protocol.ID) (net.Listener, error) {
 
 	return l, nil
 }
+
+func ListenWithContext(ctx context.Context, h host.Host, tag protocol.ID) (net.Listener, error) {
+	ctx, cancel := context.WithCancel(ctx)
+
+	l := &listener{
+		host:     h,
+		ctx:      ctx,
+		cancel:   cancel,
+		tag:      tag,
+		streamCh: make(chan network.Stream),
+	}
+
+	h.SetStreamHandler(tag, func(s network.Stream) {
+		select {
+		case l.streamCh <- s:
+		case <-ctx.Done():
+			s.Reset()
+		}
+	})
+
+	return l, nil
+}
