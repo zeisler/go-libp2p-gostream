@@ -49,7 +49,11 @@ func (l *listener) Addr() net.Addr {
 // Under the hood, these connections are libp2p streams tagged with the
 // given protocol.ID.
 func Listen(h host.Host, tag protocol.ID) (net.Listener, error) {
-	ctx, cancel := context.WithCancel(context.Background())
+	return ListenWithContext(context.Background())
+}
+
+func ListenWithContext(ctx context.Context, h host.Host, tag protocol.ID) (net.Listener, error) {
+	ctx, cancel := context.WithCancel(ctx)
 
 	l := &listener{
 		host:     h,
@@ -69,3 +73,4 @@ func Listen(h host.Host, tag protocol.ID) (net.Listener, error) {
 
 	return l, nil
 }
+	
